@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Boules de Glace</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        #game {
+            position: relative;
+            margin: 0 auto;
+            width: 300px;
+            height: 600px;
+            background-color: #87ceeb;
+            border: 2px solid #000;
+            overflow: hidden;
+        }
+
+        #cone {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 100px;
+            background-color: #d2691e;
+            clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+        }
+
+        .boule {
+            width: 50px;
+            height: 50px;
+            background-color: #ff69b4;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: moveBoule 2s linear infinite;
+        }
+
+        @keyframes moveBoule {
+            0% { left: 0%; }
+            50% { left: 100%; }
+            100% { left: 0%; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Jeu de Boules de Glace</h1>
+    <div id="game">
+        <div id="cone"></div>
+    </div>
+    <p>Score: <span id="score">0</span></p>
+    <script>
+        let score = 0;
+        const gameArea = document.getElementById('game');
+        const cone = document.getElementById('cone');
+        const scoreDisplay = document.getElementById('score');
+        let currentBoule;  // Stocker la boule actuelle
+        let previousBoule; // Stocker la boule précédente
+
+        function startGame() {
+            createBoule();
+        }
+
+        function createBoule() {
+            currentBoule = document.createElement('div');
+            currentBoule.className = 'boule';
+            gameArea.appendChild(currentBoule);
+        }
+
+        function dropBoule() {
+            currentBoule.style.animationPlayState = 'paused';
+            const bouleRect = currentBoule.getBoundingClientRect();
+            let targetRect;
+
+            if (previousBoule) {
+                targetRect = previousBoule.getBoundingClientRect();
+            } else {
+                targetRect = cone.getBoundingClientRect();
+            }
+
+            // Faire tomber la boule
+            currentBoule.style.top = `${targetRect.top - bouleRect.height}px`;
+
+            setTimeout(() => {
+                if (Math.abs(bouleRect.left + bouleRect.width / 2 - (targetRect.left + targetRect.width / 2)) <= targetRect.width / 2) {
+                    // Boule bien placée
+                    score++;
+                    scoreDisplay.textContent = score;
+                    previousBoule = currentBoule;
+                    createBoule();
+                } else {
+                    // Boule mal placée
+                    alert(`Game Over! Score: ${score}`);
+                    resetGame();
+                }
+            }, 500); // Attendre que la boule tombe
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreDisplay.textContent = score;
+            previousBoule = null;
+            const boules = document.querySelectorAll('.boule');
+            boules.forEach(boule => boule.remove());
+            startGame();
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            startGame();
+            gameArea.addEventListener('click', dropBoule);
+        });
+    </script>
+</body>
+</html>
